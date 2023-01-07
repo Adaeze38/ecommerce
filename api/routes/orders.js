@@ -29,15 +29,6 @@ router.post('/', (req, res, next) => {
   
 });
 
-// router.post('/:id', (req, res, next) => {
-//     const id = req.params.id
-//     res.status(200).json({
-//         message: "Orders created successfully" + id,
-//         id:id,
-//       
-//     });
-// });
-
 router.patch('/profile/:id',(req,res,next)=> {
     const id = req.params.id
     orderModel.updateOne({
