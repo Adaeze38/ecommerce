@@ -1,6 +1,7 @@
 const express = require('express');
 const { default: mongoose } = require('mongoose');
 const orderModel = require('../models/orderModel');
+const productModel = require('../models/productModel')
 const router = express.Router();
 
 router.get('/',(req,res,next) => {
@@ -9,24 +10,61 @@ router.get('/',(req,res,next) => {
     });
 });
 
-
-router.post('/', (req, res, next) => {
-    const goods = new orderModel({
-        productId: req.body.productid,
-        quantity:req.body.quantity,
-        _id :new mongoose.Types.ObjectId()
-        
-    })
-    goods.save().then(result=>{
+router.post("/", (req, res, next) => {
+    productModel.findById(req.body.productId)
+      .then(product => {
+        if (!product) {
+          return res.status(404).json({
+            message: "Product not found"
+          });
+        }
+        const order = new orderModel({
+          _id: mongoose.Types.ObjectId(),
+          quantity: req.body.quantity,
+          product: req.body.productId
+        });
+        return order.save();
+      })
+      .then(result => {
         console.log(result);
         res.status(201).json({
-            message:"Orders created successfully",
-            result
+          message: "Order stored",
+          createdOrder: {
+            _id: result._id,
+            product: result.product,
+            quantity: result.quantity
+          },
+          request: {
+            type: "GET",
+            url: "http://localhost:4000/orders/" + result._id
+          }
         });
-    }).catch(err=> console.log(err))
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({
+          error: err
+        });
+      });
+  });
+
+// router.post('/', (req, res, next) => {
+//     const goods = new orderModel({
+//         productId: req.body.productid,
+//         quantity:req.body.quantity,
+//         _id :new mongoose.Types.ObjectId()
+        
+//     })
+//     goods.save().then(result=>{
+//         console.log(result);
+//         res.status(201).json({
+//             message:"Orders created successfully",
+//             result
+//         });
+//     }).catch(err=> console.log(err))
 
   
-});
+// });
 
 // router.post('/:id', (req, res, next) => {
 //     const id = req.params.id
